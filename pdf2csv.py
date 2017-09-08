@@ -14,7 +14,7 @@ from subprocess import call
 from loggerconf import log
 from nameparser import nameparser
 
-debug = True #False for production
+debug = False #False for production
 pwd = os.getcwd
 cd  = lambda x: os.chdir(x)
 ls  = lambda : os.listdir(pwd())
