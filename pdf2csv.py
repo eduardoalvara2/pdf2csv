@@ -14,7 +14,7 @@ from subprocess import call
 from loggerconf import log
 from nameparser import nameparser
 
-debug = False #False for production
+debug = True #False for production
 pwd = os.getcwd
 cd  = lambda x: os.chdir(x)
 ls  = lambda : os.listdir(pwd())
@@ -81,7 +81,11 @@ def txt2csv(filename):
             #Nombre is parser to get "apellido_paterno,apellido_materno,nombre,nombre_completo"
             nombreTuple  = nameparser(nombreRaw)
             csvLineTuple = nombreTuple+(csvLine,)
-            print >> csv, separator.join(csvLineTuple)
+            csvLine = separator.join(csvLineTuple)
+            print >> csv, csvLine
+            # log.info(csvLine+nombreTuple[2])
+            if not nombreTuple[1]:
+                log.error('Record had not apellido_materno. Added anyways. '+csvLine)
             i+=1
         csvLine = ""
 

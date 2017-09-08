@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #######################################################
 # Created by: Gabo Flowers <https://github.com/gaboflowers>
+# Edited By: Eduardo Alvarado <eduardoalvara2@gmail.com>
 # Source: https://github.com/gaboflowers/servel-padron 
 #         luxuryParser.py
 #######################################################
@@ -23,7 +24,7 @@ def nameparser(nombre):
     Foreign_Starts = set(["J","K","C","P","T","X","F","Z","Y","G","H","Q"])
     def tipo_del(s):
         return (len(s) <= 3 and not any([s.startswith(c) for c in Foreign_Starts]) and\
-                not s in ["RIO","MAR","SOL","REY"]) or s in ["SAN","SANTO","SANTA","SANT"]
+                not s in ["RIO","MAR","SOL","REY","OXA","ARO"]) or s in ["SAN","SANTO","SANTA","SANT"]
 
     #apellidos frasales
     try:
