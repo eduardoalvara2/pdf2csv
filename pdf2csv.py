@@ -80,10 +80,10 @@ def txt2csv(filename):
                 log.info(nombreContinuation+" was concatenate at end of the column nombreRaw in record with rut "+csvLine[1:8].replace(separator,'')+".")
             #Nombre is parser to get "apellido_paterno,apellido_materno,nombre,nombre_completo"
             nombreTuple  = nameparser(nombreRaw)
+            nombreTuple[3] = nombreRaw
             csvLineTuple = nombreTuple+(csvLine,)
             csvLine = separator.join(csvLineTuple)
             print >> csv, csvLine
-            # log.info(csvLine+nombreTuple[2])
             if not nombreTuple[1]:
                 log.error('Record had not apellido_materno. Added anyways. '+csvLine)
             i+=1
