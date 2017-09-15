@@ -68,109 +68,115 @@ def txt2csv(filename):
 
     for line in txt:
 
-        #initialize the line
-        line = line.encode('utf-8')
-        lineLen = len(line)
-
-        #Here is saved the line to the csv (It begins after the first loop)
-        if csvLine:
-            if rutPos>lineLen>1:
-                nombreContinuation = line.strip()
-                nombreRaw+=" "+nombreContinuation 
-                log.info(nombreContinuation+" was concatenate at end of the column nombreRaw in record with rut "+csvLine[1:8].replace(separator,'')+".")
-            #Nombre is parser to get "apellido_paterno,apellido_materno,nombre,nombre_completo"
-            nombreTuple  = nameparser(nombreRaw)
-            csvLineTuple = (nombreTuple[0],nombreTuple[1],nombreTuple[2],nombreRaw,csvLine)
-            csvLine = separator.join(csvLineTuple)
-            print >> csv, csvLine
-            if not nombreTuple[1]:
-                log.error('Record had not apellido_materno. Added anyways. '+csvLine)
-            i+=1
-        csvLine = ""
-
-        #Validate if is a record
-        if(isNotValid(line)):
-            continue
-        if(line[:6]=='NOMBRE'):
-            rutPos = line.find('C.IDENTIDAD')
-            circunsPos = line.find('CIRCUNSCRIPCI')
-            continue
-
-        #if is a record, count it
-        t+=1
-
-        #GET NOMBRE
-        nombreRaw = line[:rutPos].strip()
-        if not nombreRaw:
-            iFailed['empty']+=1
-            continue
-        #IMPORTANT: The name will be added when the next loop starts
-
-        #GET RUT
-        generoPos=rutPos+16
-        rawRut = line[rutPos:generoPos].strip()
-        if not rawRut:
-            log.warning(nombreRaw+" near the record "+str(i)+" only had a floating Nombre. Record ignored")
-            iFailed['onlyname']+=1
-            csvLine = ""
-            continue
-        rutArr = rawRut.replace('.','').split('-',1)
-        rut = rutArr[0]
-        csvLine += rut
-        csvLine += separator
-
-        #GET DV
-        dv = rutArr[1]
-        csvLine += dv
-        csvLine += separator
-
-        #GET GENERO
-        domicilioPos=generoPos+4
-        genero = line[generoPos:domicilioPos].strip()
-        csvLine += genero
-        csvLine += separator
-
-        #GET DOMICILIO
-        domicilio = line[domicilioPos:circunsPos].strip()
-        j=0
-        #If the address is in diferent lines
-        while(lineLen<circunsPos):
-            j+=1
-            line = txt.readline().encode('utf-8')
+        try:
+            #initialize the line
+            line = line.encode('utf-8')
             lineLen = len(line)
-            if(isNotValid(line)): 
-                log.warning(nombreRaw+" with rut "+rut+" near the record "+str(i)+" had an abrut end reading his Domicilio. Record ignored")
-                iFailed['abrutend']+=1
-                csvLine = ""
-                break
-            domicilio += " "+line[domicilioPos:circunsPos].strip()
-            if(j>=7):
-                break
-        if(isNotValid(line)): 
+
+            #Here is saved the line to the csv (It begins after the first loop)
+            if csvLine:
+                if rutPos>lineLen>1:
+                    nombreContinuation = line.strip()
+                    nombreRaw+=" "+nombreContinuation 
+                    log.info(nombreContinuation+" was concatenate at end of the column nombreRaw in record with rut "+csvLine[1:8].replace(separator,'')+".")
+                #Nombre is parser to get "apellido_paterno,apellido_materno,nombre,nombre_completo"
+                nombreTuple  = nameparser(nombreRaw)
+                csvLineTuple = (nombreTuple[0],nombreTuple[1],nombreTuple[2],nombreRaw,csvLine)
+                csvLine = separator.join(csvLineTuple)
+                print >> csv, csvLine
+                if not nombreTuple[1]:
+                    log.warning('Record had not apellido_materno. Added anyways. '+csvLine)
+                i+=1
             csvLine = ""
-            continue
-        csvLine += domicilio
-        csvLine += separator
 
-        #GET CIRCUNSCRIPCION
-        csvLine += current['region']
-        csvLine += separator
-        csvLine += current['provincia']
-        csvLine += separator
-        csvLine += current['comuna']
-        csvLine += separator
+            #Validate if is a record
+            if(isNotValid(line)):
+                continue
+            if(line[:6]=='NOMBRE'):
+                rutPos = line.find('C.IDENTIDAD')
+                circunsPos = line.find('CIRCUNSCRIPCI')
+                continue
 
-        #GET MESA
-        mesaPos = lineLen-6
-        mesa = line[mesaPos:].strip()
-        csvLine += mesa
-        csvLine += separator
+            #if is a record, count it
+            t+=1
 
-        #Source File
-        fuente = filename+".pdf "+current['pagina']
-        csvLine += fuente
-        #endfor
+            #GET NOMBRE
+            nombreRaw = line[:rutPos].strip()
+            if not nombreRaw:
+                iFailed['empty']+=1
+                continue
+            #IMPORTANT: The name will be added when the next loop starts
 
+            #GET RUT
+            generoPos=rutPos+16
+            rawRut = line[rutPos:generoPos].strip()
+            if not rawRut:
+                log.warning(nombreRaw+" near the record "+str(i)+" only had a floating Nombre. Record ignored")
+                iFailed['onlyname']+=1
+                csvLine = ""
+                continue
+            rutArr = rawRut.replace('.','').split('-',1)
+            rut = rutArr[0]
+            csvLine += rut
+            csvLine += separator
+
+            #GET DV
+            if(len(rutArr)>=2):
+                dv = rutArr[1]
+                csvLine += dv
+            else:
+                log.warning(rawRut+" near the record "+str(i)+" had not Digito Verificador")
+            csvLine += separator
+
+            #GET GENERO
+            domicilioPos=generoPos+4
+            genero = line[generoPos:domicilioPos].strip()
+            csvLine += genero
+            csvLine += separator
+
+            #GET DOMICILIO
+            domicilio = line[domicilioPos:circunsPos].strip()
+            j=0
+            #If the address is in diferent lines
+            while(lineLen<circunsPos):
+                j+=1
+                line = txt.readline().encode('utf-8')
+                lineLen = len(line)
+                if(isNotValid(line)): 
+                    log.warning(nombreRaw+" with rut "+rut+" near the record "+str(i)+" had an abrut end reading his Domicilio. Record ignored")
+                    iFailed['abrutend']+=1
+                    csvLine = ""
+                    break
+                domicilio += " "+line[domicilioPos:circunsPos].strip()
+                if(j>=7):
+                    break
+            if(isNotValid(line)): 
+                csvLine = ""
+                continue
+            csvLine += domicilio
+            csvLine += separator
+
+            #GET CIRCUNSCRIPCION
+            csvLine += current['region']
+            csvLine += separator
+            csvLine += current['provincia']
+            csvLine += separator
+            csvLine += current['comuna']
+            csvLine += separator
+
+            #GET MESA
+            mesaPos = lineLen-6
+            mesa = line[mesaPos:].strip()
+            csvLine += mesa
+            csvLine += separator
+
+            #Source File
+            fuente = filename+".pdf "+current['pagina']
+            csvLine += fuente
+            #endfor
+        except: # catch *all* exceptions
+            e = sys.exc_info()[0]
+            log.error( "Line ["+line+"] returned an exception: "+e)
     txt.close()
     csv.close()
     ti+=i
@@ -251,7 +257,9 @@ if __name__ == '__main__':
             os.rename(txtn,newTxt)
 
             #Convert  text to csv
+            
             txt2csv(filename)
+            
 
             #Show time lapse
             timeLapse = str(round(time.clock()-startTime,2))
