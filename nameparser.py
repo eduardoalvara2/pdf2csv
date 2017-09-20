@@ -13,7 +13,7 @@ regex_manyEspacios = re.compile("\s[\s]+")
 def nameparser(nombre):
     palabras = nombre.split()
     if len(palabras) == 2:
-        return (nombre,palabras[1],palabras[0],"")
+        return (palabras[1],"",palabras[0],nombre)
     nombre = nombre.strip(' ')
     i_esp = nombre.find(' ')
     ap1 = nombre[:i_esp]
